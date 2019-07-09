@@ -1,0 +1,24 @@
+uci.df <- read.csv("heart.csv", header = TRUE)
+str(uci.df)
+summary(uci.df)
+data.uci <- data.frame(uci.df)
+
+#Transforming variables into categorical variables
+data.uci$sex <- factor(data.uci$sex) #(1 = male; 0 = female)
+data.uci$cp <- factor(data.uci$cp) #chest pain type
+data.uci$fbs <- factor(data.uci$fbs) #(fasting blood sugar > 120 mg/dl) (1 = true; 0 = false)
+data.uci$restecg <- factor(data.uci$restecg) #resting electrocardiographic results
+data.uci$exang <- factor(data.uci$exang) #exercise induced angina (1 = yes; 0 = no)
+data.uci$slope <- factor(data.uci$slope) #the slope of the peak exercise ST segment
+data.uci$ca <- factor(data.uci$ca) #number of major vessels (0-3) colored by flourosopy
+data.uci$target <- factor(data.uci$target) #1 or 0
+data.uci$thal <- factor(data.uci$thal) #3 = normal; 6 = fixed defect; 7 = reversable defect
+
+summary(data.uci)
+str(data.uci)
+
+library("dplyr")
+num.datauci <- select_if(data.uci, is.numeric)
+datauci_norm <- as.data.frame(apply(num.datauci, 2, function(x) (x - min(x))/(max(x)-min(x))))
+str(datauci_norm)
+boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2, main="Boxplot of Variables")
