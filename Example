@@ -3,160 +3,73 @@
 # union.R
 # R Versions: 3.4.4 i386
 #
-# Author(s): LW
+# Author(s): JA, SM, LW
 # 
-# Description: Leer datos encuentas qualtrics
+# Description: Leer datos encuentas UCI
 #
-# Inputs:   1. Datos de estudiantes preSaber aplicaciones 2019
+# Inputs:   1. Datos de  individuos UCI
 #
-# Outputs:  1. Datos Rdata
+# Outputs:  1. Análisis CART, KNN, Discriminant Analysis
 ##
 # File history:
 
 rm(list=ls())
 # options(encoding="UTF-8")
 
-# Paths -------------------------------------------------------------------
-
-inPath <- file.path('..','input')
-outPath <- file.path('..','output')
-
 # Paquetes ----------------------------------------------------------------
 
 library(dplyr) # # 0.7.2
 library(openxlsx)
 library(stringr)
-library(lubridate)
-library(expss)
 library(tidyr)
-
-# Funciones ---------------------------------------------------------------
 
 
 # Definiciones globales ---------------------------------------------------
 
-dictionaryList <- list()
-
 # filesR <- list.files(path = inPath, pattern = '_univariados')
 
-varIdenti <- c('StartDate', 'EndDate', 'Status', 'IPAddress', 'Progress', 
-               'Duration.(in.seconds)', 'Finished', 'RecordedDate', 'ResponseId', 
-               'LocationLatitude', 'LocationLongitude', 'DistributionChannel', 
-               'UserLanguage', 'Q14_2', 'Q14_4', 'Q14_5', 'Q29', 'Q29_1_TEXT', 
-               'Q29_2_TEXT', 'Q29_4_TEXT')
+varNum <- c('')
 
-# prueba <- 'MOTIVACION'
-prueba <- 'TICS'
-
-verOut <- '_02'
+varFactor <- c('sex','cp','fbs','restecg','exang','slope','ca','target','thal')
 
 # Lectura datos --------------------------------------------------------------
 
-# Lectura diccionario
+uci.df <- read.csv("heart.csv", header = TRUE)
+data.uci <- data.frame(uci.df)
 
-nameDicc <- paste("Diccionario_Estudiantes", prueba, "v02.xlsx", sep = '_')
-inFile <- file.path(inPath, nameDicc)
+# Procesamiento projecto final -----------------------------------------------
 
-opRes <- read.xlsx(inFile, sheet = "OpcResp" ,colNames = TRUE ) 
+data.uci <- data.uci %>% 
+  mutate_at(vars(sex,cp,fbs,restecg,exang,slope,ca,target,thal), 
+            funs(as.factor))
 
-estructura<- read.xlsx(inFile, sheet = "diccionario") %>% 
-  filter(elimina == '06' & !is.na(codItem)) %>% 
-  mutate( codItem = str_to_upper(codItem))
+num.datauci <- select_if(data.uci, is.numeric)
+datauci_norm <- as.data.frame(apply(num.datauci, 2, function(x)
+                              (x - min(x))/(max(x)-min(x))))
 
+# Exploracion datos-----------------------------------------------------------
 
-# Lectura datos
+str(datauci_norm)
+boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
+                main="Boxplot of Variables")
 
-inFileD <- file.path(inPath, "Encuesta diseño experimental original.xlsx")
-
-dataEn <- read.xlsx(inFileD, sheet = 1, colNames = TRUE) 
-
-
-
-# Procesamiento --------------------------------------------------------------
-
-for(nn in seq(1:length(names(dataEn)))){
-  var_lab(dataEn[nn]) =  dataEn[nn][1,]
-}
-
-dataRecod <- dataEn[-1,]%>% 
-  mutate_at(c('StartDate', 'EndDate', 'RecordedDate'), funs(convertToDateTime(.)))
-
-
-# Formar varias variables de la recodificación
-
-diccRecod <- estructura %>% 
-  filter(recodifica == '01')
-
-varRecod <-  diccRecod %>% 
-  mutate(itemNew = substr(codItem, 1,2)) %>% 
-  pull(itemNew) %>% 
-  unique()
-
-
-for(vv in varRecod) { 
-  
-  varCod <- diccRecod %>% 
-    filter(grepl(vv,codItem))
-  
-  dataRecod <- dataRecod %>% 
-    mutate_all(funs(gsub('[.]',',',(.)))) 
-  
-  for(cc in seq(1:nrow(varCod))){
-    
-    nameRecod <- varCod[cc,] %>% 
-      pull(codItem)
-    
-    dataRecod[nameRecod] <- ifelse(grepl(cc,dataRecod[,vv]) & !is.na(dataRecod[,vv]), 1, 0)
-    
-  }
-  
-}
+# CART -----------------------------------------------------------------------
 
 
 
-## Cambiar orientación
 
 
-diccOrienta <- estructura %>% 
-  filter(grepl('In|in', orient))
 
-varOrienta <- diccOrienta %>% 
-  pull(codItem)
+# KNN ------------------------------------------------------------------------
 
-for(oo in varOrienta){
-  
-  orderIni <- sort(unique(dataRecod[, oo]))
-  orderFin <- sort(orderIni, decreasing = TRUE)
-  
-  dataRecod[,oo] <- lordif::recode(dataRecod[, oo], orderIni, orderFin)
 
-}
 
-varPrueba <- estructura %>% 
-  pull(codItem)
 
-datBlock <- dataRecod %>% 
-  select(varIdenti, varPrueba)
-
-dictionaryList[['variables']] <- estructura %>% 
-  select(-id) %>% 
-  rename(id = codItem)
-  
-dictionaryList[['opRes']] <- opRes
+# Discriminant Analysis --------------------------------------------------------
 
 
 
 # Guardar datos -----------------------------------------------------------
 
-
-if(!file.exists(file.path(inPath, '00Crear'))){
-  dir.create(file.path(inPath, '00Crear'))
-}
-
-fileData <-  file.path(inPath, '00Crear', paste0('datBlock_', prueba, verOut,'.Rdata')) 
-save(datBlock, file = fileData)
-
-
-fileDicc <-  file.path(inPath, '00Crear', paste0('dictionaryList_', prueba, verOut, '.Rdata')) 
-save(dictionaryList, file = fileDicc)
+save(datBlock, file = 'datBlock.Rdata')
 
