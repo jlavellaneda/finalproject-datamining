@@ -22,7 +22,7 @@ library(dplyr) # # 0.7.2
 library(openxlsx)
 library(stringr)
 library(tidyr)
-
+library(DiscriMiner)
 
 # Definiciones globales ---------------------------------------------------
 
@@ -66,6 +66,10 @@ boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
 
 
 # Discriminant Analysis --------------------------------------------------------
+> my_lin1 = linDA(data.uci[,4:5], data.uci$target)
+> my_lin1$confusion
+> my_lin1$error_rate
+> my_lin1$functions
 
 
 
