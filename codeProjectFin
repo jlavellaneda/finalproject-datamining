@@ -16,7 +16,7 @@
 rm(list=ls())
 # options(encoding="UTF-8")
 
-# Paquetes ----------------------------------------------------------------
+# Packages ----------------------------------------------------------------
 
 library(dplyr) # # 0.7.2
 library(openxlsx)
@@ -26,6 +26,8 @@ library(purrr)
 library(DiscriMiner)
 library(rpart)
 library(rpart.plot)
+library(e1071)
+library(caret)
 
 # Definiciones globales ---------------------------------------------------
 
