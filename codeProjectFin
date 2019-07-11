@@ -116,7 +116,9 @@ prp(deeper.tree, type = 1, extra = 1, under = TRUE, split.font = 1, varlen = -10
 > my_lin1$confusion
 > my_lin1$error_rate
 > my_lin1$functions
-
+propensity.uci <- exp(da.cla$scores[,2])/(exp(da.cla$scores[,1])+exp(da.cla$scores[,2]))
+> data.frame(Actual=data.uci$target,
++            da.cla$classification, da.cla$scores, propensity.owner=propensity.uci)
 
 
 # Guardar datos -----------------------------------------------------------
