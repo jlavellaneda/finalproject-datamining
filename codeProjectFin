@@ -84,8 +84,8 @@ dataCat <- data.uci %>%
 cor.mat <- round(cor(datauci_norm),2) 
 melted.cor.mat <- melt(cor.mat)
 ggplot(melted.cor.mat, aes(x = X1, y = X2, fill = value)) + 
-+     geom_tile() + 
-+     geom_text(aes(x = X1, y = X2, label = value))
+     geom_tile() + 
+     geom_text(aes(x = X1, y = X2, label = value))
 
 
 # CART -----------------------------------------------------------------------
