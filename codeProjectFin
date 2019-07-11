@@ -22,14 +22,29 @@ library(dplyr) # # 0.7.2
 library(openxlsx)
 library(stringr)
 library(tidyr)
+library(purrr)
 library(DiscriMiner)
-library(caret)
+library(rpart)
+library(rpart.plot)
 
 # Definiciones globales ---------------------------------------------------
 
-# filesR <- list.files(path = inPath, pattern = '_univariados')
+reportNum <- function(x, name) { 
+  tibble(   name   = name, 
+            min    = min(x,na.rm =TRUE), 
+            med    = median(x,na.rm =TRUE),
+            mean   = mean(x,na.rm =TRUE),
+            sd     = sd(x,na.rm =TRUE),
+            max    = max(x,na.rm =TRUE),
+            miss   = sum(length(which(is.na(x)))) )}
 
-varNum <- c('')
+reportCat <- function(x, name) { 
+  tibble(   name   = name, 
+            count  = count(x,na.rm =TRUE),
+            miss   = sum(length(which(is.na(x)))))}
+
+
+varNum <- c('age', 'trestbps', 'chol', 'thalach', 'oldpeak' )
 
 varFactor <- c('sex','cp','fbs','restecg','exang','slope','ca','target','thal')
 
@@ -38,7 +53,7 @@ varFactor <- c('sex','cp','fbs','restecg','exang','slope','ca','target','thal')
 uci.df <- read.csv("heart.csv", header = TRUE)
 data.uci <- data.frame(uci.df)
 
-# Data Processing -----------------------------------------------
+# Procesamiento projecto final -----------------------------------------------
 
 data.uci <- data.uci %>% 
   mutate_at(vars(sex,cp,fbs,restecg,exang,slope,ca,target,thal), 
@@ -48,13 +63,41 @@ num.datauci <- select_if(data.uci, is.numeric)
 datauci_norm <- as.data.frame(apply(num.datauci, 2, function(x)
                               (x - min(x))/(max(x)-min(x))))
 
-# Data Exploration-----------------------------------------------------------
+# Exploracion datos-----------------------------------------------------------
 
 str(datauci_norm)
 boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
                 main="Boxplot of Variables")
 
+dataNum <- data.uci %>% 
+  select(varFactor) %>% 
+  imap_dfr(reportNum) %>% 
+  mutate_at(vars(-name), funs(round(.,2)))
+
+dataCat <- data.uci %>% 
+  select(varNum) %>% 
+  imap_dfr(reportCat) %>% 
+  mutate_at(vars(-name), funs(round(.,2)))
+
+
 # CART -----------------------------------------------------------------------
+
+# use rpart() to run a classification tree.
+# define rpart.control() in rpart() to determine the depth of the tree.
+class.tree <- rpart(Ownership ~ ., data = mower.df, 
+                    control = rpart.control(maxdepth = 2), method = "class")
+## plot tree
+# use prp() to plot the tree. You can control plotting parameters such as color, shape, 
+# and information displayed (which and where).
+prp(class.tree, type = 1, extra = 1, split.font = 1, varlen = -10)  
+###
+deeper.tree <- rpart(Ownership ~ ., data = mower.df, method = "class", cp = 0, minsplit = 1)
+# count number of leaves
+length(deeper.tree$frame$var[deeper.tree$frame$var == "<leaf>"])
+# plot tree
+prp(deeper.tree, type = 1, extra = 1, under = TRUE, split.font = 1, varlen = -10, 
+    box.col=ifelse(deeper.tree$frame$var == "<leaf>", 'gray', 'white'))  
+
 
 
 
@@ -67,14 +110,14 @@ boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
 
 
 # Discriminant Analysis --------------------------------------------------------
-da.cla <- linDA(datauci_norm[,1:5], data.uci[,14])
-da.cla$functions
-da.cla$confusion
-da.cla$error_rate
-confusionMatrix(da.cla$classification, data.uci$target)
+> my_lin1 = linDA(data.uci[,4:5], data.uci$target)
+> my_lin1$confusion
+> my_lin1$error_rate
+> my_lin1$functions
 
 
-# Outputs -----------------------------------------------------------
+
+# Guardar datos -----------------------------------------------------------
 
 save(datBlock, file = 'datBlock.Rdata')
 
