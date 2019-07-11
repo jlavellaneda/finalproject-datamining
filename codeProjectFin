@@ -23,6 +23,7 @@ library(openxlsx)
 library(stringr)
 library(tidyr)
 library(DiscriMiner)
+library(caret)
 
 # Definiciones globales ---------------------------------------------------
 
@@ -37,7 +38,7 @@ varFactor <- c('sex','cp','fbs','restecg','exang','slope','ca','target','thal')
 uci.df <- read.csv("heart.csv", header = TRUE)
 data.uci <- data.frame(uci.df)
 
-# Procesamiento projecto final -----------------------------------------------
+# Data Processing -----------------------------------------------
 
 data.uci <- data.uci %>% 
   mutate_at(vars(sex,cp,fbs,restecg,exang,slope,ca,target,thal), 
@@ -47,7 +48,7 @@ num.datauci <- select_if(data.uci, is.numeric)
 datauci_norm <- as.data.frame(apply(num.datauci, 2, function(x)
                               (x - min(x))/(max(x)-min(x))))
 
-# Exploracion datos-----------------------------------------------------------
+# Data Exploration-----------------------------------------------------------
 
 str(datauci_norm)
 boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
@@ -66,14 +67,14 @@ boxP <- boxplot(datauci_norm, col="darkcyan", horizontal = TRUE, las=2,
 
 
 # Discriminant Analysis --------------------------------------------------------
-> my_lin1 = linDA(data.uci[,4:5], data.uci$target)
-> my_lin1$confusion
-> my_lin1$error_rate
-> my_lin1$functions
+da.cla <- linDA(datauci_norm[,1:5], data.uci[,14])
+da.cla$functions
+da.cla$confusion
+da.cla$error_rate
+confusionMatrix(da.cla$classification, data.uci$target)
 
 
-
-# Guardar datos -----------------------------------------------------------
+# Outputs -----------------------------------------------------------
 
 save(datBlock, file = 'datBlock.Rdata')
 
