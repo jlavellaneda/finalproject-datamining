@@ -161,7 +161,7 @@ propensity.uci <- exp(da.cla$scores[,2])/(exp(da.cla$scores[,1])+exp(da.cla$scor
 data.frame(Actual=data.uci$target, da.cla$classification, da.cla$scores, propensity.owner=propensity.uci)
 
 #Scatter Plot using the two most relevant variables of the model.
-plot(datauci_norm$ï..age ~ datauci_norm$thalach, xlab = "Age", ylab = "Thalac", col = ifelse(data.uci$target == 1, "black", "gray"), las=2)
+plot(datauci_norm$ï..age ~ datauci_norm$thalach, xlab = "Thalac", ylab = "Age", col = ifelse(data.uci$target == 1, "black", "gray"), las=2)
 # Guardar datos -----------------------------------------------------------
 
 save(datBlock, file = 'datBlock.Rdata')
