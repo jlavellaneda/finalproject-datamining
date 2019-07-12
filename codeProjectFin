@@ -29,6 +29,10 @@ library(rpart.plot)
 library(e1071)
 library(caret)
 library(reshape)
+library(lattice)
+library(ggplot2)
+library(gains)
+
 
 # Definiciones globales ---------------------------------------------------
 
@@ -110,10 +114,20 @@ prp(deeper.tree, type = 1, extra = 1, under = TRUE, split.font = 1, varlen = -10
 
 
 
+# Logistic Regression ----------------------------------------------------------
 
+set.seed(11072019)
 
+train.index <- sample(c(1:dim(data.uci)[1]), dim(data.uci)[1]*0.6)
+train.df <- data.uci[train.index, ]
+valid.df <- data.uci[-train.index, ]
 
-# KNN ------------------------------------------------------------------------
+logit.reg <- glm( target ~ ., data = train.df, family = "binomial")
+options(scipen=999)
+summary(logit.reg)
+
+data.frame(summary(logit.reg)$coefficients, odds = exp(coef(logit.reg)))
+
 
 
 
