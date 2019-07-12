@@ -147,7 +147,12 @@ confusionMatrix(as.factor(ifelse(as.vector(pred) > 0.5, 1, 0)), valid.df$target)
 
 
 # Discriminant Analysis --------------------------------------------------------
-da.cla <- linDA(datauci_norm[,1:5], data.uci[,14])
+num.datauci <-c('ï..age', 'trestbps', 'chol', 'thalach', 'oldpeak' )
+#Crear una variable y normalizar
+datauci_norm <- data.uci %>% 
+mutate_at(vars(num.datauci), funs((.) - min(.)/(max(.)-min(.))))
+
+da.cla <- linDA(datauci_norm[,'ï..age', 'trestbps', 'chol', 'thalach', 'oldpeak'], datauci_norm[,14])
 da.cla$functions
 da.cla$confusion
 da.cla$error_rate
