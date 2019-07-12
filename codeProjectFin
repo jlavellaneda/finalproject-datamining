@@ -28,6 +28,7 @@ library(rpart)
 library(rpart.plot)
 library(e1071)
 library(caret)
+library(reshsape)
 
 # Definiciones globales ---------------------------------------------------
 
