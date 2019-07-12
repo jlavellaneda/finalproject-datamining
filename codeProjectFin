@@ -92,6 +92,11 @@ ggplot(melted.cor.mat, aes(x = X1, y = X2, fill = value)) +
      geom_tile() + 
      geom_text(aes(x = X1, y = X2, label = value))
 
+#Histograms for Analyze the Normal Distribution Assumption
+par(mfrow=c(3, 3))
+colnames <- dimnames(datauci_norm)[[2]]
+for (i in 1:5) {hist(datauci_norm[,i], xlim=c(0, 1.5), ylim=c(0, 5), 
+breaks=seq(0, 1.5, 0.1), main=colnames[i], probability=TRUE, col="gray", border="white")}
 
 # CART -----------------------------------------------------------------------
 
