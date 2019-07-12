@@ -66,6 +66,12 @@ data.uci <- data.uci %>%
   mutate_at(vars(sex,cp,fbs,restecg,exang,slope,ca,target,thal), 
             funs(as.factor))
 
+#Convertir variables a numéricas
+data.uci$age <- as.numeric(data.uci$age)
+data.uci$trestbps <- as.numeric(data.uci$trestbps)
+data.uci$chol <- as.numeric(data.uci$chol)
+data.uci$thalach <- as.numeric(data.uci$thalach)
+
 num.datauci <- select_if(data.uci, is.numeric)
 datauci_norm <- as.data.frame(apply(num.datauci, 2, function(x)
                               (x - min(x))/(max(x)-min(x))))
@@ -92,11 +98,6 @@ ggplot(melted.cor.mat, aes(x = X1, y = X2, fill = value)) +
      geom_tile() + 
      geom_text(aes(x = X1, y = X2, label = value))
 
-#Histograms for Analyze the Normal Distribution Assumption
-par(mfrow=c(3, 3))
-colnames <- dimnames(datauci_norm)[[2]]
-for (i in 1:5) {hist(datauci_norm[,i], xlim=c(0, 1.5), ylim=c(0, 5), 
-breaks=seq(0, 1.5, 0.1), main=colnames[i], probability=TRUE, col="gray", border="white")}
 
 # CART -----------------------------------------------------------------------
 
@@ -121,11 +122,15 @@ prp(deeper.tree, type = 1, extra = 1, under = TRUE, split.font = 1, varlen = -10
 
 # Logistic Regression ----------------------------------------------------------
 
-set.seed(11072019)
+#Partition data
 
-train.index <- sample(c(1:dim(data.uci)[1]), dim(data.uci)[1]*0.6)
-train.df <- data.uci[train.index, ]
-valid.df <- data.uci[-train.index, ]
+set.seed(11072019)
+train.index <- sample(c(1:dim(datauci_norm )[1]), dim(datauci_norm )[1]*0.6)
+
+train.df <- datauci_norm [train.index, ]
+valid.df <- datauci_norm [-train.index, ]
+
+#Logistic Regression
 
 logit.reg <- glm( target ~ ., data = train.df, family = "binomial")
 options(scipen=999)
@@ -133,6 +138,10 @@ summary(logit.reg)
 
 data.frame(summary(logit.reg)$coefficients, odds = exp(coef(logit.reg)))
 
+#Confusion Matrix
+
+pred <- predict(logit.reg, valid.df)
+confusionMatrix(as.factor(ifelse(as.vector(pred) > 0.5, 1, 0)), valid.df$target)
 
 
 
