@@ -150,16 +150,15 @@ confusionMatrix(as.factor(ifelse(as.vector(pred) > 0.5, 1, 0)), valid.df$target)
 num.datauci <-c('ï..age', 'trestbps', 'chol', 'thalach', 'oldpeak' )
 #Crear una variable y normalizar
 datauci_norm <- data.uci %>% 
-mutate_at(vars(num.datauci), funs((.) - min(.)/(max(.)-min(.))))
+  mutate_at(vars(num.datauci), funs((.) - min(.)/(max(.)-min(.))))
 
-da.cla <- linDA(datauci_norm[,'ï..age', 'trestbps', 'chol', 'thalach', 'oldpeak'], datauci_norm[,14])
+da.cla <- linDA(datauci_norm %>%select(1, 4, 5, 8, 10), datauci_norm[,14])
 da.cla$functions
 da.cla$confusion
 da.cla$error_rate
-confusionMatrix(da.cla$classification, data.uci$target)
+confusionMatrix(da.cla$classification, da.cla$target)
 propensity.uci <- exp(da.cla$scores[,2])/(exp(da.cla$scores[,1])+exp(da.cla$scores[,2]))
-data.frame(Actual=data.uci$target,
-+            da.cla$classification, da.cla$scores, propensity.owner=propensity.uci)
+data.frame(Actual=data.uci$target, da.cla$classification, da.cla$scores, propensity.owner=propensity.uci)
 
 #Scatter Plot using the two most relevant variables of the model.
 plot(datauci_norm$ï..age ~ datauci_norm$thalach, xlab = "Age", ylab = "Thalac", col = ifelse(data.uci$target == 1, "black", "gray"), las=2)
