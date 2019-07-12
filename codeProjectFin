@@ -122,6 +122,12 @@ prp(deeper.tree, type = 1, extra = 1, under = TRUE, split.font = 1, varlen = -10
 
 # Logistic Regression ----------------------------------------------------------
 
+#Normalize
+
+num.datauci <-c('age', 'trestbps', 'chol', 'thalach', 'oldpeak' )
+datauci_norm <- data.uci %>% 
+  mutate_at(vars(num.datauci), funs((.) - min(.)/(max(.)-min(.))))
+
 #Partition data
 
 set.seed(11072019)
@@ -137,6 +143,7 @@ options(scipen=999)
 summary(logit.reg)
 
 data.frame(summary(logit.reg)$coefficients, odds = exp(coef(logit.reg)))
+
 
 #Confusion Matrix
 
